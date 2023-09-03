@@ -8,5 +8,5 @@ Currently these are the main goals:
 
 - Abstract/Interface implementations as far as possible/reasonable, e.g. MqttClientOptions, MqttTlsOptions and so on.
 - Move abstractions into standalone projects/packages, allowing consumers to choose the correct packages when implementing.
-- Move implmentations into seperate project/packages, allwoing consumers to choose the specific/wanted implementation, eg. Server, Client, ManagedClient.
+- Move implmentations into seperate project/packages, allowing consumers to choose the specific/wanted implementation, eg. Server, Client, ManagedClient.
 
