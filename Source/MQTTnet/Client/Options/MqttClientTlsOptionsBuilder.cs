@@ -49,6 +49,17 @@ namespace MQTTnet.Client
             return this;
         }
 
+        public MqttClientTlsOptionsBuilder WithCertificateSelectionHandler(Func<MqttClientCertificateSelectionEventArgs, X509Certificate> certificateSelectionHandler)
+        {
+            if (certificateSelectionHandler == null)
+            {
+                throw new ArgumentNullException(nameof(certificateSelectionHandler));
+            }
+
+            _tlsOptions.CertificateSelectionHandler = certificateSelectionHandler;
+            return this;
+        }
+
         public MqttClientTlsOptionsBuilder WithClientCertificates(IEnumerable<X509Certificate2> certificates)
         {
             if (certificates == null)
@@ -131,6 +142,15 @@ namespace MQTTnet.Client
             _tlsOptions.EncryptionPolicy = encryptionPolicy;
             return this;
         }
+#endif
+
+#if NET7_0_OR_GREATER
+        public MqttClientTlsOptionsBuilder WithTrustChain(X509Certificate2Collection chain)
+        {
+            _tlsOptions.TrustChain = chain;
+            return this;
+        }
+
 #endif
     }
 }

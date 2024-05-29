@@ -65,7 +65,7 @@ namespace MQTTnet.Tests.Clients.MqttClient
                         return CompletedTask.Instance;
                     };
 
-                    await client.ConnectAsync(new MqttClientOptionsBuilder().WithTcpServer("1.2.3.4").Build());
+                    await client.ConnectAsync(new MqttClientOptionsBuilder().WithTcpServer("127.0.0.1").Build());
 
                     Assert.Fail("Must fail!");
                 }
@@ -168,6 +168,38 @@ namespace MQTTnet.Tests.Clients.MqttClient
         }
 
         [TestMethod]
+        public async Task No_Unobserved_Exception()
+        {
+            using (var testEnvironment = CreateTestEnvironment())
+            {
+                testEnvironment.IgnoreClientLogErrors = true;
+
+                var client = testEnvironment.CreateClient();
+                var options = new MqttClientOptionsBuilder().WithTcpServer("1.2.3.4").WithTimeout(TimeSpan.FromSeconds(2)).Build();
+
+                try
+                {
+                    using (var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(0.5)))
+                    {
+                        await client.ConnectAsync(options, timeout.Token);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                }
+
+                client.Dispose();
+
+                // These delays and GC calls are required in order to make calling the finalizer reproducible.
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                await LongTestDelay();
+                await LongTestDelay();
+                await LongTestDelay();
+            }
+        }
+
+        [TestMethod]
         public async Task Return_Non_Success()
         {
             using (var testEnvironment = CreateTestEnvironment(MqttProtocolVersion.V500))
@@ -208,9 +240,9 @@ namespace MQTTnet.Tests.Clients.MqttClient
                     await mqttClient.SubscribeAsync("test", MqttQualityOfServiceLevel.AtLeastOnce);
                 }
             }
-            catch (MqttCommunicationException exception)
+            catch (MqttClientNotConnectedException exception)
             {
-                if (exception.Message == "The client is not connected.")
+                if (exception.Message == "The MQTT client is not connected.")
                 {
                     return;
                 }
